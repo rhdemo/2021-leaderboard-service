@@ -1,0 +1,24 @@
+{
+  "distributed-cache": {
+    "mode": "SYNC",
+    "encoding": {
+      "key": {
+        "media-type": "application/x-protostream"
+      },
+      "value": {
+        "media-type": "application/x-protostream"
+      }
+    },
+    "transaction": {
+      "mode": "NON_XA"
+    },
+    "memory": {
+      "storage": "HEAP"
+    }
+  }
+}
+
+//    "indexing": {
+//      "enabled":true,
+//      "indexed-entities" : ["com.redhat.ConnectedPlayer"]
+//    },
