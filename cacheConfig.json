@@ -9,16 +9,14 @@
         "media-type": "application/x-protostream"
       }
     },
-    "transaction": {
-      "mode": "NON_XA"
+    "indexing": {
+      "enabled":true,
+      "statistics": true,
+      "indexed-entities" : ["com.redhat.PlayerScore"]
     },
+    "statistics": true,
     "memory": {
       "storage": "HEAP"
     }
   }
 }
-
-//    "indexing": {
-//      "enabled":true,
-//      "indexed-entities" : ["com.redhat.ConnectedPlayer"]
-//    },

@@ -1,8 +1,10 @@
-package com.redhat.service.leaderboard;
+package com.redhat.api.websockets;
 
-import com.redhat.model.ConnectedPlayer;
+import com.redhat.model.PlayerScore;
+import io.quarkus.infinispan.client.Remote;
 import io.quarkus.scheduler.Scheduled;
 import io.vertx.core.json.JsonObject;
+import org.graalvm.nativeimage.impl.InternalPlatform;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.Search;
@@ -23,23 +25,18 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static com.redhat.model.ConnectedPlayer.CONNECTED_PLAYERS;
-
 @ServerEndpoint("/leaderboard")
 @ApplicationScoped
 public class LeaderboardEndpoint {
    private static final Logger LOGGER = LoggerFactory.getLogger(LeaderboardEndpoint.class.getName());
 
-   Map<String, Session> sessions = new ConcurrentHashMap<>();
-   RemoteCache<String, ConnectedPlayer> connectedPlayers;
-   Query topTenQuery;
+   private Map<String, Session> sessions = new ConcurrentHashMap<>();
 
    @Inject
-   public LeaderboardEndpoint(RemoteCacheManager remoteCacheManager) {
-      connectedPlayers = remoteCacheManager.getCache(CONNECTED_PLAYERS);
-      QueryFactory queryFactory = Search.getQueryFactory(connectedPlayers);
-      topTenQuery = queryFactory.create("from com.redhat.ConnectedPlayer p ORDER BY p.score DESC, p.timestamp ASC").maxResults(10);
-   }
+   RemoteCacheManager remoteCacheManager;
+
+   RemoteCache<String, PlayerScore> playersScores;
+   Query topTenQuery;
 
    @OnOpen
    public void onOpen(Session session) {
@@ -65,9 +62,25 @@ public class LeaderboardEndpoint {
          return;
       }
 
-      List<ConnectedPlayer> topTen = topTenQuery.execute().list();
+      if(!remoteCacheManager.getCacheNames().contains(PlayerScore.PLAYERS_SCORES)) {
+         LOGGER.warn(String.format("%s cache does not exit", PlayerScore.PLAYERS_SCORES));
+         return;
+      }
+
+      if(playersScores == null) {
+         playersScores = remoteCacheManager.getCache(PlayerScore.PLAYERS_SCORES);
+      }
+
+      if(topTenQuery == null) {
+         QueryFactory queryFactory = Search.getQueryFactory(playersScores);
+         // TODO: filter by gameID if we have more than one game ?
+         topTenQuery = queryFactory.create("from com.redhat.PlayerScore p WHERE p.human=true ORDER BY p.score DESC, p.timestamp ASC").maxResults(10);
+      }
+
+      List<PlayerScore> topTen = topTenQuery.execute().list();
       List<JsonObject> jsonPlayers = topTen.stream().map(JsonObject::mapFrom)
             .collect(Collectors.toList());
+
       sessions.values().forEach(s -> s.getAsyncRemote().sendObject(jsonPlayers.toString(), result -> {
          if (result.getException() != null) {
             LOGGER.error("Leaderboard service got interrupted", result.getException());

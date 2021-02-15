@@ -4,6 +4,6 @@ import org.infinispan.protostream.SerializationContextInitializer;
 import org.infinispan.protostream.annotations.AutoProtoSchemaBuilder;
 
 @AutoProtoSchemaBuilder(schemaPackageName = "com.redhat",
-      includeClasses = { ConnectedPlayer.class, Attack.class})
+      includeClasses = { PlayerScore.class, Shot.class, ShotType.class, ShipType.class, GameStatus.class})
 public interface LeaderboardServiceContextInitializer extends SerializationContextInitializer {
 }
