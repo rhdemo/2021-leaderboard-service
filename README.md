@@ -1,10 +1,10 @@
-# 2021-leaderboard-service - WIP
+# 2021-leaderboard-service
+
 Leaderboard Service, baked with Quarkus and Infinispan
 
-Run Infinispan
+Run Infinispan with Docker
 
 `docker run -v $(pwd):/user-config  -p 11222:11222 -e USER="admin" -e PASS="pass" infinispan/server:12.0.1.Final`
-
 
 ## Scoring REST API
 
@@ -127,3 +127,16 @@ Payload
   "ai-submarine-sunks":0
 }
 ```
+
+## Build the image (native or jvm)
+
+`docker run --name=infinispan --net=summit -p 11222:11222 -e USER="admin" -e PASS="pass" infinispan/server:12.0.1.Final`
+
+`docker run -i --rm -p 8081:8081 --net=summit -e QUARKUS_INFINISPAN_CLIENT_SERVER_LIST='infinispan:11222' 2021-leaderboard-service`
+
+`docker ps`
+
+grab the commit and 
+
+`docker commit 07efa7671e424 quay.io/redhatdemo/2021-leaderboard-service`
+`docker push quay.io/redhatdemo/2021-leaderboard-service`
