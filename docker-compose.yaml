@@ -1,0 +1,38 @@
+version: '3'
+
+networks:
+  mynetwork:
+    driver: bridge
+volumes:
+  myapp:
+
+services:
+  infinispan-server:
+    image: infinispan/server
+    ports:
+      - "11222:11222"
+    container_name: infinispan
+    networks:
+      - mynetwork
+    environment:
+      - USER=admin
+      - PASS=pass
+  client-app:
+    image: 2021-leaderboard-service
+    ports:
+      - "8081:8081"
+    container_name: client
+    depends_on:
+      - infinispan-server
+    networks:
+      - mynetwork
+    command: >
+      /bin/sh -c "
+        echo Waiting for Infinispan service start ...;
+        while ! curl --silent --output /dev/null --fail-early --user admin:pass http://infinispan:11222;
+        do
+          sleep 1;
+        done;
+        echo Infinispan service started!;
+        ./application -Dquarkus.http.host=0.0.0.0 -Dquarkus.infinispan-client.server-list=infinispan:11222
+      "

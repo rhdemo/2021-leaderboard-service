@@ -5,6 +5,7 @@ import com.redhat.model.Shot;
 import io.quarkus.runtime.StartupEvent;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.configuration.XMLStringConfiguration;
 import org.infinispan.counter.api.CounterConfiguration;
 import org.infinispan.counter.api.CounterManager;
@@ -30,10 +31,13 @@ public class InfinispanInit {
 
    void onStart(@Observes @Priority(value = 1) StartupEvent ev) {
       if(configureInfinispan) {
-         if(!cacheManager.getCacheNames().contains(INDEXED_PROTOBUF)){
+         try{
             cacheManager.administration()
                   .createTemplate(INDEXED_PROTOBUF, new XMLStringConfiguration(TEST_CACHE_XML_CONFIG));
+         } catch(CacheConfigurationException ex) {
+            // Do nothing
          }
+
          cacheManager.administration().getOrCreateCache(PlayerScore.PLAYERS_SCORES, INDEXED_PROTOBUF);
          cacheManager.administration().getOrCreateCache(Shot.PLAYERS_SHOTS, "example.PROTOBUF_DIST");
 
