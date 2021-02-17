@@ -8,7 +8,7 @@ Run Infinispan with Docker
 
 ## Scoring REST API
 
-Health : `http GET http://localhost:8081/scoring`
+Health : `http GET http://localhost:8080/scoring`
 
 ### Create or Update a score
 
@@ -23,7 +23,7 @@ Health : `http GET http://localhost:8081/scoring`
 
 Example: 
 ```bash 
-http POST 'http://localhost:8081/scoring/g1/m1/u1?delta=123&human=true&timestamp=9090898'
+http POST 'http://localhost:8080/scoring/g1/m1/u1?delta=123&human=true&timestamp=9090898'
 ```
 
 ### Track a win
@@ -38,7 +38,7 @@ http POST 'http://localhost:8081/scoring/g1/m1/u1?delta=123&human=true&timestamp
 Example: 
 
 ```bash 
-http POST 'http://localhost:8081/scoring/g1/m1/u1/win?timestamp=1223'
+http POST 'http://localhost:8080/scoring/g1/m1/u1/win?timestamp=1223'
 ```
 
 ### Track a loss
@@ -51,7 +51,7 @@ http POST 'http://localhost:8081/scoring/g1/m1/u1/win?timestamp=1223'
 * `timestamp`: long milliseconds number 
 
 ```bash 
-http POST 'http://localhost:8081/scoring/g1/m1/u1/loss?timestamp=1223'
+http POST 'http://localhost:8080/scoring/g1/m1/u1/loss?timestamp=1223'
 ```
 
 ## Shots REST API
@@ -67,11 +67,11 @@ http POST 'http://localhost:8081/scoring/g1/m1/u1/loss?timestamp=1223'
 * `human`: `true` for humans, `false` for AI
 
 ```bash 
-http POST 'http://localhost:8081/shot/g1/m1/u1/10?type=MISS&ship=&human=true'
+http POST 'http://localhost:8080/shot/g1/m1/u1/10?type=MISS&ship=&human=true'
 
-http POST 'http://localhost:8081/shot/g1/m1/u1/11?type=HIT&ship=CARRIER&human=true'
+http POST 'http://localhost:8080/shot/g1/m1/u1/11?type=HIT&ship=CARRIER&human=true'
 
-http POST 'http://localhost:8081/shot/g1/m1/u1/12?type=SUNK&ship=CARRIER&human=true'
+http POST 'http://localhost:8080/shot/g1/m1/u1/12?type=SUNK&ship=CARRIER&human=true'
 
 ```
 
@@ -79,7 +79,7 @@ http POST 'http://localhost:8081/shot/g1/m1/u1/12?type=SUNK&ship=CARRIER&human=t
 
 ### Leaderboard
 
-`ws://localhost:8081/leaderboard`
+`ws://localhost:8080/leaderboard`
 
 Payload 
 
@@ -107,7 +107,7 @@ Payload
 ]
 ```
 ### Stats
-`ws://localhost:8081/stats`
+`ws://localhost:8080/stats`
 
 Payload
 
@@ -128,15 +128,25 @@ Payload
 }
 ```
 
-## Build the image (native or jvm)
+## Run images (native or jvm)
 
-`docker run --name=infinispan --net=summit -p 11222:11222 -e USER="admin" -e PASS="pass" infinispan/server:12.0.1.Final`
+1. Run Infinispan
 
-`docker run -i --rm -p 8081:8081 --net=summit -e QUARKUS_INFINISPAN_CLIENT_SERVER_LIST='infinispan:11222' 2021-leaderboard-service`
+```shell script
+./run-infinispan.sh
+```
 
-`docker ps`
+2. Build following the instructions the native or the jvm image (instructions in Dockerfile or Dockerfile.jvm)
 
-grab the commit and 
+3. Run the application
+
+```shell script
+./run-app.sh
+```
+Access 
+* Infinispan Console in `http://localhost:11222`. Log using admin/pass credentials
+* Leaderboard: `http://localhost:8080`
+
 
 `docker commit 07efa7671e424 quay.io/redhatdemo/2021-leaderboard-service`
 `docker push quay.io/redhatdemo/2021-leaderboard-service`

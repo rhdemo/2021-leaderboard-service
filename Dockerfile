@@ -3,7 +3,7 @@
 #
 # Before building the docker image run:
 #
-# mvn package -Pnative -Dnative-image.docker-build=true
+# ./mvnw package -Pnative -Dnative-image.docker-build=true
 #
 # Then, build the image with:
 #
@@ -11,12 +11,12 @@
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8081:8081 2021-leaderboard-service
+# docker run -i --rm -p 8080:8080 2021-leaderboard-service
 #
 ###
 
 FROM registry.fedoraproject.org/fedora-minimal
 WORKDIR /work/
 COPY target/*-runner /work/application
-EXPOSE 8081
+EXPOSE 8080
 CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]
