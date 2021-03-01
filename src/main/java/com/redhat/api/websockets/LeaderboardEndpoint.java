@@ -1,10 +1,8 @@
 package com.redhat.api.websockets;
 
 import com.redhat.model.PlayerScore;
-import io.quarkus.infinispan.client.Remote;
 import io.quarkus.scheduler.Scheduled;
 import io.vertx.core.json.JsonObject;
-import org.graalvm.nativeimage.impl.InternalPlatform;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.Search;

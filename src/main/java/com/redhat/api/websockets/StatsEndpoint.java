@@ -7,7 +7,6 @@ import io.vertx.core.json.JsonObject;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.Search;
-import org.infinispan.counter.api.CounterManager;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
 import org.slf4j.Logger;
@@ -21,7 +20,6 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,9 +34,6 @@ public class StatsEndpoint {
 
    RemoteCache<String, PlayerScore> playersScores;
    RemoteCache<String, Shot> shots;
-
-   @Inject
-   CounterManager counterManager;
 
    @Inject
    RemoteCacheManager remoteCacheManager;
@@ -65,18 +60,63 @@ public class StatsEndpoint {
       Query<Object[]> countActiveAIPlayers = queryFactory
             .create("SELECT COUNT(p.userId) FROM com.redhat.PlayerScore p WHERE p.human=false AND p.gameStatus='PLAYING'");
 
+      Query<Object[]> countHumanHits = queryFactory
+            .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=true AND s.shotType='HIT'");
+
+      Query<Object[]> countAiHits = queryFactory
+            .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=false AND s.shotType='HIT'");
+
+      Query<Object[]> countHumanMisses = queryFactory
+            .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=true AND s.shotType='MISS'");
+
+      Query<Object[]> countAiMisses = queryFactory
+            .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=false AND s.shotType='MISS'");
+
+      Query<Object[]> countHumanSunks = queryFactory
+            .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=true AND s.shotType='SUNK'");
+
+      Query<Object[]> countAiSunks = queryFactory
+            .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=false AND s.shotType='SUNK'");
+
+      Query<Object[]> countHumanCarrierSunks = queryFactory
+            .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=true AND s.shotType='SUNK' and s.shipType='CARRIER'");
+
+      Query<Object[]> countAiCarrierSunks = queryFactory
+            .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=false AND s.shotType='SUNK' and s.shipType='CARRIER'");
+
+
+      Query<Object[]> countHumanSubmarineSunks = queryFactory
+            .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=true AND s.shotType='SUNK' and s.shipType='SUBMARINE'");
+
+      Query<Object[]> countAiSubmarineSunks = queryFactory
+            .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=false AND s.shotType='SUNK' and s.shipType='SUBMARINE'");
+
+
       long humanActive = Long.valueOf(countActiveHumanPlayers.execute().list().get(0)[0].toString());
       long aiActive = Long.valueOf(countActiveAIPlayers.execute().list().get(0)[0].toString());
+      long humanHits = Long.valueOf(countHumanHits.execute().list().get(0)[0].toString());
+      long aiHits = Long.valueOf(countAiHits.execute().list().get(0)[0].toString());
+      long humanMisses = Long.valueOf(countHumanMisses.execute().list().get(0)[0].toString());
+      long aiMisses = Long.valueOf(countAiMisses.execute().list().get(0)[0].toString());
+      long humanSunks = Long.valueOf(countHumanSunks.execute().list().get(0)[0].toString());
+      long aiSunks = Long.valueOf(countAiSunks.execute().list().get(0)[0].toString());
+      long humanCarrierSunks = Long.valueOf(countHumanCarrierSunks.execute().list().get(0)[0].toString());
+      long aiCarrierSunks = Long.valueOf(countAiCarrierSunks.execute().list().get(0)[0].toString());
+      long humanSubmarineSunks = Long.valueOf(countHumanSubmarineSunks.execute().list().get(0)[0].toString());
+      long aiSubmarineSunks = Long.valueOf(countAiSubmarineSunks.execute().list().get(0)[0].toString());
 
       stats.put("human-active", humanActive);
+      stats.put("human-hits", humanHits);
+      stats.put("human-misses", humanMisses);
+      stats.put("human-sunks", humanSunks);
+      stats.put("human-submarine-sunks", humanSubmarineSunks);
+      stats.put("human-carrier-sunks", humanCarrierSunks);
       stats.put("ai-active", aiActive);
-
-      Collection<String> counterNames = counterManager.getCounterNames();
-      for (String name : counterNames) {
-         counterManager.getStrongCounter(name).getValue().thenAccept(value -> {
-            stats.put(name, value);
-         });
-      }
+      stats.put("ai-hits", aiHits);
+      stats.put("ai-misses", aiMisses);
+      stats.put("ai-sunks", aiSunks);
+      stats.put("ai-submarine-sunks", aiSubmarineSunks);
+      stats.put("ai-carrier-sunks",aiCarrierSunks);
    }
 
    private boolean checkAvailabilityOfCaches() {
