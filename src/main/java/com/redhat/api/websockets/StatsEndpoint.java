@@ -35,8 +35,24 @@ public class StatsEndpoint {
    RemoteCache<String, PlayerScore> playersScores;
    RemoteCache<String, Shot> shots;
 
-   @Inject
    RemoteCacheManager remoteCacheManager;
+
+   @Inject
+   public StatsEndpoint(RemoteCacheManager remoteCacheManager) {
+      this.remoteCacheManager = remoteCacheManager;
+      stats.put("human-active", 0L);
+      stats.put("human-hits", 0L);
+      stats.put("human-misses", 0L);
+      stats.put("human-sunks", 0L);
+      stats.put("human-submarine-sunks", 0L);
+      stats.put("human-carrier-sunks", 0L);
+      stats.put("ai-active", 0L);
+      stats.put("ai-hits", 0L);
+      stats.put("ai-misses", 0L);
+      stats.put("ai-sunks", 0L);
+      stats.put("ai-submarine-sunks", 0L);
+      stats.put("ai-carrier-sunks",0L);
+   }
 
    @OnOpen
    public void onOpen(Session session) {
@@ -52,43 +68,42 @@ public class StatsEndpoint {
       if (checkAvailabilityOfCaches())
          return;
 
-      // TODO: Decide with the Infinispan team if use counters or do queries for everything
-      QueryFactory queryFactory = Search.getQueryFactory(playersScores);
-      Query<Object[]> countActiveHumanPlayers = queryFactory
+      QueryFactory queryFactoryPlayerScores = Search.getQueryFactory(playersScores);
+      QueryFactory queryFactoryShots = Search.getQueryFactory(shots);
+      Query<Object[]> countActiveHumanPlayers = queryFactoryPlayerScores
             .create("SELECT COUNT(p.userId) FROM com.redhat.PlayerScore p WHERE p.human=true AND p.gameStatus='PLAYING'");
 
-      Query<Object[]> countActiveAIPlayers = queryFactory
+      Query<Object[]> countActiveAIPlayers = queryFactoryPlayerScores
             .create("SELECT COUNT(p.userId) FROM com.redhat.PlayerScore p WHERE p.human=false AND p.gameStatus='PLAYING'");
 
-      Query<Object[]> countHumanHits = queryFactory
+      Query<Object[]> countHumanHits = queryFactoryShots
             .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=true AND s.shotType='HIT'");
 
-      Query<Object[]> countAiHits = queryFactory
+      Query<Object[]> countAiHits = queryFactoryShots
             .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=false AND s.shotType='HIT'");
 
-      Query<Object[]> countHumanMisses = queryFactory
+      Query<Object[]> countHumanMisses = queryFactoryShots
             .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=true AND s.shotType='MISS'");
 
-      Query<Object[]> countAiMisses = queryFactory
+      Query<Object[]> countAiMisses = queryFactoryShots
             .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=false AND s.shotType='MISS'");
 
-      Query<Object[]> countHumanSunks = queryFactory
+      Query<Object[]> countHumanSunks = queryFactoryShots
             .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=true AND s.shotType='SUNK'");
 
-      Query<Object[]> countAiSunks = queryFactory
+      Query<Object[]> countAiSunks = queryFactoryShots
             .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=false AND s.shotType='SUNK'");
 
-      Query<Object[]> countHumanCarrierSunks = queryFactory
+      Query<Object[]> countHumanCarrierSunks = queryFactoryShots
             .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=true AND s.shotType='SUNK' and s.shipType='CARRIER'");
 
-      Query<Object[]> countAiCarrierSunks = queryFactory
+      Query<Object[]> countAiCarrierSunks = queryFactoryShots
             .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=false AND s.shotType='SUNK' and s.shipType='CARRIER'");
 
-
-      Query<Object[]> countHumanSubmarineSunks = queryFactory
+      Query<Object[]> countHumanSubmarineSunks = queryFactoryShots
             .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=true AND s.shotType='SUNK' and s.shipType='SUBMARINE'");
 
-      Query<Object[]> countAiSubmarineSunks = queryFactory
+      Query<Object[]> countAiSubmarineSunks = queryFactoryShots
             .create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=false AND s.shotType='SUNK' and s.shipType='SUBMARINE'");
 
 
@@ -133,7 +148,7 @@ public class StatsEndpoint {
       if(playersScores == null) {
          playersScores = remoteCacheManager.getCache(PlayerScore.PLAYERS_SCORES);
       }
-      if(playersScores == null) {
+      if(shots == null) {
          shots = remoteCacheManager.getCache(Shot.PLAYERS_SHOTS);
       }
       return false;

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>RH Summit - Leader board</title>
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/css/patternfly.min.css">
+    <link rel="stylesheet" type="text/css"
+          href="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/css/patternfly-additions.min.css">
+
+    <style>
+        #log {
+            resize: none;
+            overflow: hidden;
+            background: gray;
+            color: aliceblue;
+            padding: 1em;
+            font-family: Courier;
+            font-size: small;
+        }
+    </style>
+</head>
+
+<body>
+<nav class="navbar navbar-default navbar-pf" role="navigation">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="/">
+            <p><strong>Leader board service</strong></p>
+        </a>
+    </div>
+</nav>
+<div class="container">
+    <h1>Websockets</h1>
+    <div class="row">
+        <h2>Top 10</h2>
+        <textarea id="leaders" rows="10" style="width: 800px; height: 200px"></textarea>
+    </div>
+    <div class="row">
+        <h2>Stats</h2>
+        <textarea id="stats" rows="10" style="width: 800px; height: 200px"></textarea>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/patternfly/3.24.0/js/patternfly.min.js"></script>
+
+<script type="text/javascript">
+    var connected = false;
+    var socket;
+
+    $(document).ready(function () {
+        if (!connected) {
+            socket = new WebSocket("ws://" + location.host + "/leaderboard");
+            socket.onopen = function () {
+                connected = true;
+                console.log("Connected to Leaderboard web socket");
+            };
+            socket.onmessage = function (m) {
+                console.log(m.data);
+                document.getElementById("leaders").value = m.data;
+            };
+        }
+    });
+    $(document).ready(function () {
+        if (!connected) {
+            socket = new WebSocket("ws://" + location.host + "/stats");
+            socket.onopen = function () {
+                connected = true;
+                console.log("Connected to Stats web socket");
+            };
+            socket.onmessage = function (m) {
+                console.log(m.data);
+                document.getElementById("stats").value = m.data;
+            };
+        }
+    });
+</script>
+</body>
+
+</html>
