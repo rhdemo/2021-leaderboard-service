@@ -19,6 +19,10 @@ public class PlayerScore implements Comparable {
    private Long timestamp;
    private GameStatus gameStatus;
 
+   public PlayerScore() {
+
+   }
+
    @ProtoFactory
    public PlayerScore(String userId, String matchId, String gameId, String username, Boolean human, Integer score, Long timestamp,
                       GameStatus gameStatus) {

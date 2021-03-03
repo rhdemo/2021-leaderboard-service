@@ -1,5 +1,6 @@
 package com.redhat.api.websockets;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.model.PlayerScore;
 import io.quarkus.scheduler.Scheduled;
 import io.vertx.core.json.JsonObject;
@@ -18,10 +19,10 @@ import javax.websocket.OnError;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 @ServerEndpoint("/leaderboard")
 @ApplicationScoped
@@ -55,7 +56,7 @@ public class LeaderboardEndpoint {
    }
 
    @Scheduled(every = "0.5s")
-   public void broadcast() {
+   public void broadcast() throws JsonProcessingException {
       if(sessions.isEmpty()) {
          return;
       }
@@ -76,10 +77,22 @@ public class LeaderboardEndpoint {
       }
 
       List<PlayerScore> topTen = topTenQuery.execute().list();
-      List<JsonObject> jsonPlayers = topTen.stream().map(JsonObject::mapFrom)
-            .collect(Collectors.toList());
 
-      sessions.values().forEach(s -> s.getAsyncRemote().sendObject(jsonPlayers.toString(), result -> {
+      List<String> topTenJson = new ArrayList<>();
+      for(PlayerScore p : topTen) {
+         JsonObject object = new JsonObject();
+         object.put("userId", p.getUserId());
+         object.put("matchId", p.getMatchId());
+         object.put("gameId", p.getGameId());
+         object.put("human", p.isHuman());
+         object.put("userName", p.getUsername());
+         object.put("score", p.getScore());
+         object.put("timestamp", p.getTimestamp());
+         object.put("gameStatus", p.getGameStatus());
+         topTenJson.add(object.toString());
+      }
+
+      sessions.values().forEach(s -> s.getAsyncRemote().sendObject(topTenJson.toString(), result -> {
          if (result.getException() != null) {
             LOGGER.error("Leaderboard service got interrupted", result.getException());
          }

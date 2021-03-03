@@ -28,7 +28,7 @@ public class InfinispanInit {
    @Inject
    RemoteCacheManager cacheManager;
 
-   @ConfigProperty(name = "configureInfinispan")
+   @ConfigProperty(name = "leaderboard.configure-infinispan")
    Boolean configureInfinispan;
    boolean init = false;
    List<Player> randomPlayers = new ArrayList<>();
@@ -47,19 +47,14 @@ public class InfinispanInit {
          cacheManager.administration()
                .getOrCreateCache(Shot.PLAYERS_SHOTS, new XMLStringConfiguration(TEST_CACHE_SHOTS_CONFIG));
 
-         String matchId = "";
          for (String name: randomNames) {
-            String useMatchId = matchId;
-            if (matchId == "") {
-               matchId = UUID.randomUUID().toString();
-               useMatchId  = matchId;
-            } else {
-               matchId = "";
-            }
-
-            Player player = Player.create(name, useMatchId, true);
-            randomPlayers.add(player);
-            playerScores.put(player.getPlayerScoreId(), player.toPlayerScore());
+            String matchId = UUID.randomUUID().toString();
+            Player playerHuman = Player.create(name, matchId, true);
+            Player playerAI = Player.create("ai-" + name, matchId, false);
+            randomPlayers.add(playerHuman);
+            randomPlayers.add(playerAI);
+            playerScores.put(playerHuman.getPlayerScoreId(), playerHuman.toPlayerScore());
+            playerScores.put(playerAI.getPlayerScoreId(), playerAI.toPlayerScore());
          }
 
          init = true;
@@ -97,16 +92,16 @@ public class InfinispanInit {
    public void createData() {
       if(configureInfinispan && init) {
          RemoteCache<String, PlayerScore> playerScores = cacheManager.getCache(PlayerScore.PLAYERS_SCORES);
-         Player player1 = randomPlayers.get(random.nextInt(randomPlayers.size()));
-         PlayerScore playerScore = playerScores.get(player1.getPlayerScoreId());
-         playerScore.setScore(random.nextInt(8));
-         playerScores.put(player1.getPlayerScoreId(), playerScore);
+         Player player = randomPlayers.get(random.nextInt(randomPlayers.size()));
+         PlayerScore playerScore = playerScores.get(player.getPlayerScoreId());
+         playerScore.setScore(random.nextInt(25));
+         playerScores.put(player.getPlayerScoreId(), playerScore);
          RemoteCache<String, Shot> shots = cacheManager.getCache(Shot.PLAYERS_SHOTS);
 
          int shotType = random.nextInt(3);
          int shipType = random.nextInt(2);
 
-         Shot shot = new Shot(player1.userId, player1.matchId, player1.gameId, true, Instant.EPOCH.toEpochMilli(),
+         Shot shot = new Shot(player.userId, player.matchId, player.gameId, player.human, Instant.EPOCH.toEpochMilli(),
                ShotType.values()[shotType], ShipType.values()[shipType]);
 
          shots.put(UUID.randomUUID().toString(), shot);

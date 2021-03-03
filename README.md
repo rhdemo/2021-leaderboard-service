@@ -21,7 +21,7 @@ Payload
     "matchId":"m1",
     "gameId":"g1",
     "human":true,
-    "username": "Michael",
+    "userName": "Michael",
     "score":12,
     "timestamp":9090898,
     "gameStatus":"PLAYING"
@@ -31,7 +31,7 @@ Payload
     "matchId":"m1",
     "gameId":"g1",
     "human":true,
-    "username": "Jennifer",
+    "userName": "Jennifer",
     "score":12,
     "timestamp":9090898,
     "gameStatus":"PLAYING"
