@@ -89,7 +89,7 @@ Payload
 Access 
 * Infinispan Console in `http://localhost:11222`. Log using admin/pass credentials
 * Leaderboard: `http://localhost:8080`
+  
 
-
-`docker commit 89e70c17e17d quay.io/redhatdemo/2021-leaderboard-service`
+`docker commit b05be67e6ae0 quay.io/redhatdemo/2021-leaderboard-service`
 `docker push quay.io/redhatdemo/2021-leaderboard-service`
