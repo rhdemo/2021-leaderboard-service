@@ -1,6 +1,5 @@
 package com.redhat.api.websockets;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.redhat.model.PlayerScore;
 import io.quarkus.scheduler.Scheduled;
 import io.vertx.core.json.JsonObject;
@@ -35,7 +34,9 @@ public class LeaderboardEndpoint {
    RemoteCacheManager remoteCacheManager;
 
    RemoteCache<String, PlayerScore> playersScores;
+   RemoteCache<String, String> game;
    Query topTenQuery;
+   String gameId = "";
 
    @OnOpen
    public void onOpen(Session session) {
@@ -56,7 +57,7 @@ public class LeaderboardEndpoint {
    }
 
    @Scheduled(every = "0.5s")
-   public void broadcast() throws JsonProcessingException {
+   public void broadcast() {
       if(sessions.isEmpty()) {
          return;
       }
@@ -66,14 +67,30 @@ public class LeaderboardEndpoint {
          return;
       }
 
+      if(!remoteCacheManager.getCacheNames().contains("game")) {
+         LOGGER.warn(String.format("%s cache does not exit", "game"));
+         return;
+      }
+
       if(playersScores == null) {
          playersScores = remoteCacheManager.getCache(PlayerScore.PLAYERS_SCORES);
       }
 
-      if(topTenQuery == null) {
+      if(game == null) {
+         game = remoteCacheManager.getCache("game");
+      }
+
+      String currentGame = game.get("current-game");
+      String currentGameId = new JsonObject(currentGame).getString("uuid");
+
+      if(gameId.isEmpty()) {
+         gameId = currentGameId;
+      }
+
+      if(topTenQuery == null || !gameId.equals(currentGameId)) {
+         gameId = currentGameId;
          QueryFactory queryFactory = Search.getQueryFactory(playersScores);
-         // TODO: filter by gameID if we have more than one game ?
-         topTenQuery = queryFactory.create("from com.redhat.PlayerScore p WHERE p.human=true ORDER BY p.score DESC, p.timestamp ASC").maxResults(10);
+         topTenQuery = queryFactory.create("from com.redhat.PlayerScore p WHERE p.human=true AND p.gameId='"+ gameId + "' ORDER BY p.score DESC, p.timestamp ASC").maxResults(10);
       }
 
       List<PlayerScore> topTen = topTenQuery.execute().list();

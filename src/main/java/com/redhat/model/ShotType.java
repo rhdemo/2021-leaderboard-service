@@ -8,5 +8,5 @@ public enum  ShotType {
    @ProtoEnumValue(number = 2)
    MISS,
    @ProtoEnumValue(number = 3)
-   SUNK
+   SUNK,
 }

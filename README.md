@@ -46,18 +46,28 @@ Payload
 
 ```json
 {
-  "human-active":0,
-  "human-hits":4,
-  "human-misses":5,
-  "human-sunks":0,
-  "human-submarine-sunks":0,
-  "human-carrier-sunks":0,
-  "ai-active":0,
-  "ai-hits":0,
-  "ai-misses":0,
-  "ai-sunks":0,
-  "ai-carrier-sunks":0,
-  "ai-submarine-sunks":0
+  "human-active": 21,
+  "human-win": 0,
+  "human-loss": 0,
+  "human-hits": 8,
+  "human-misses": 15,
+  "human-sunks": 12,
+  "human-carrier-sunks": 4,
+  "human-submarine-sunks": 5,
+  "human-destroyer-sunks": 2,
+  "human-battleship-sunks": 1,
+  "human-bonus": 0,
+  "ai-active": 21,
+  "ai-win": 0,
+  "ai-loss": 0,
+  "ai-hits": 0,
+  "ai-misses": 0,
+  "ai-sunks": 0,
+  "ai-carrier-sunks": 0,
+  "ai-submarine-sunks": 0,
+  "ai-destroyer-sunks": 0,
+  "ai-battleship-sunks": 0,
+  "ai-bonus": 0
 }
 ```
 
@@ -81,5 +91,5 @@ Access
 * Leaderboard: `http://localhost:8080`
 
 
-`docker commit 93cee6062ce6 quay.io/redhatdemo/2021-leaderboard-service`
+`docker commit 89e70c17e17d quay.io/redhatdemo/2021-leaderboard-service`
 `docker push quay.io/redhatdemo/2021-leaderboard-service`

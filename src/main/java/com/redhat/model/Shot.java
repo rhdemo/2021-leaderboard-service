@@ -19,12 +19,7 @@ public class Shot {
    public static final String PLAYERS_SHOTS = "players-shots";
 
    @ProtoFactory
-   public Shot(String userId,
-               String matchId,
-               String gameId,
-               Boolean human,
-               Long timestamp,
-               ShotType shotType,
+   public Shot(String userId, String matchId, String gameId, Boolean human, Long timestamp, ShotType shotType,
                ShipType shipType) {
       this.userId = userId;
       this.matchId = matchId;
@@ -54,6 +49,7 @@ public class Shot {
    }
 
    @ProtoField(number = 3)
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
    public String getGameId() {
       return gameId;
    }
@@ -73,6 +69,7 @@ public class Shot {
    }
 
    @ProtoField(number = 5)
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
    public Long getTimestamp() {
       return timestamp;
    }

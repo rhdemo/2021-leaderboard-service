@@ -7,4 +7,8 @@ public enum ShipType {
    CARRIER,
    @ProtoEnumValue(number = 2)
    SUBMARINE,
+   @ProtoEnumValue(number = 3)
+   BATTLESHIP,
+   @ProtoEnumValue(number = 4)
+   DESTROYER
 }

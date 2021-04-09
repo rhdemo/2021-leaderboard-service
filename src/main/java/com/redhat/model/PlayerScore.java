@@ -18,6 +18,7 @@ public class PlayerScore implements Comparable {
    private Integer score;
    private Long timestamp;
    private GameStatus gameStatus;
+   private Integer bonus;
 
    public PlayerScore() {
 
@@ -25,7 +26,7 @@ public class PlayerScore implements Comparable {
 
    @ProtoFactory
    public PlayerScore(String userId, String matchId, String gameId, String username, Boolean human, Integer score, Long timestamp,
-                      GameStatus gameStatus) {
+                      GameStatus gameStatus, Integer bonus) {
       this.userId = userId;
       this.matchId = matchId;
       this.gameId = gameId;
@@ -34,6 +35,7 @@ public class PlayerScore implements Comparable {
       this.score = score;
       this.timestamp = timestamp;
       this.gameStatus = gameStatus;
+      this.bonus = bonus;
    }
 
    @Override
@@ -44,7 +46,8 @@ public class PlayerScore implements Comparable {
          return false;
       PlayerScore that = (PlayerScore) o;
       return Objects.equals(userId, that.userId) && Objects
-            .equals(matchId, that.matchId) && Objects.equals(gameId, that.gameId);
+            .equals(matchId, that.matchId) && Objects.equals(gameId, that.gameId)
+            && Objects.equals(bonus, that.bonus);
    }
 
    @Override
@@ -83,6 +86,7 @@ public class PlayerScore implements Comparable {
    }
 
    @ProtoField(number = 3)
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
    public String getGameId() {
       return gameId;
    }
@@ -101,6 +105,7 @@ public class PlayerScore implements Comparable {
    }
 
    @ProtoField(number = 5)
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
    public Boolean isHuman() {
       return human;
    }
@@ -130,11 +135,21 @@ public class PlayerScore implements Comparable {
    }
 
    @ProtoField(number = 8)
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
    public GameStatus getGameStatus() {
       return gameStatus;
    }
 
    public void setGameStatus(GameStatus gameStatus) {
       this.gameStatus = gameStatus;
+   }
+
+   @ProtoField(number = 9)
+   public Integer getBonus() {
+      return bonus;
+   }
+
+   public void setBonus(Integer bonus) {
+      this.bonus = bonus;
    }
 }

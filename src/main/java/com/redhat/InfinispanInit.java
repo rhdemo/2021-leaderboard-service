@@ -7,6 +7,7 @@ import com.redhat.model.Shot;
 import com.redhat.model.ShotType;
 import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
+import io.vertx.core.json.JsonObject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
@@ -25,6 +26,7 @@ import java.util.UUID;
 @ApplicationScoped
 public class InfinispanInit {
 
+   public static final String GAME_ID = "1e1348c774d01c7c";
    @Inject
    RemoteCacheManager cacheManager;
 
@@ -46,6 +48,15 @@ public class InfinispanInit {
                .getOrCreateCache(PlayerScore.PLAYERS_SCORES, new XMLStringConfiguration(TEST_CACHE_PLAYER_CONFIG));
          cacheManager.administration()
                .getOrCreateCache(Shot.PLAYERS_SHOTS, new XMLStringConfiguration(TEST_CACHE_SHOTS_CONFIG));
+
+         RemoteCache<String, String> game = cacheManager.administration()
+               .getOrCreateCache("game", new XMLStringConfiguration(GAME_CACHE_CONFIG));
+
+         JsonObject json = new JsonObject();
+         json.put("uuid", GAME_ID);
+         json.put("date", "2021-04-08T17:38:35.421Z");
+         json.put("state", "active");
+         game.put("current-game", json.toString());
 
          for (String name: randomNames) {
             String matchId = UUID.randomUUID().toString();
@@ -70,7 +81,7 @@ public class InfinispanInit {
 
       public static Player create(String name, String matchId, boolean human) {
          Player player = new Player();
-         player.gameId =  "d488f0e8-7ade-11eb-9439-0242ac130002";
+         player.gameId = GAME_ID;
          player.name = name;
          player.matchId = matchId;
          player.userId = UUID.randomUUID().toString();
@@ -84,7 +95,7 @@ public class InfinispanInit {
 
       PlayerScore toPlayerScore() {
          return new PlayerScore(userId, matchId, gameId, name, human, 0,
-                     Instant.now().toEpochMilli(), GameStatus.PLAYING);
+                     Instant.now().toEpochMilli(), GameStatus.PLAYING, 0);
       }
    }
 
@@ -94,12 +105,13 @@ public class InfinispanInit {
          RemoteCache<String, PlayerScore> playerScores = cacheManager.getCache(PlayerScore.PLAYERS_SCORES);
          Player player = randomPlayers.get(random.nextInt(randomPlayers.size()));
          PlayerScore playerScore = playerScores.get(player.getPlayerScoreId());
-         playerScore.setScore(random.nextInt(25));
+         playerScore.setScore(playerScore.getScore() + random.nextInt(25));
+         playerScore.setBonus(playerScore.getBonus() + (random.nextBoolean() ? 1 : 0));
          playerScores.put(player.getPlayerScoreId(), playerScore);
          RemoteCache<String, Shot> shots = cacheManager.getCache(Shot.PLAYERS_SHOTS);
 
-         int shotType = random.nextInt(3);
-         int shipType = random.nextInt(2);
+         int shotType = random.nextInt(ShotType.values().length);
+         int shipType = random.nextInt(ShipType.values().length);
 
          Shot shot = new Shot(player.userId, player.matchId, player.gameId, player.human, Instant.EPOCH.toEpochMilli(),
                ShotType.values()[shotType], ShipType.values()[shipType]);
@@ -136,6 +148,17 @@ public class InfinispanInit {
                "           <indexed-entity> com.redhat.Shot</indexed-entity>" +
                "        </indexed-entities>" +
                "    </indexing>" +
+               "  </distributed-cache>" +
+               "</cache-container></infinispan>";
+
+   private static final String GAME_CACHE_CONFIG =
+         "<infinispan><cache-container>" +
+               "  <distributed-cache name=\"game\" statistics=\"true\">" +
+               "    <memory storage=\"HEAP\"/>" +
+               "    <encoding>" +
+               "        <key media-type=\"text/plain\"/>" +
+               "        <value media-type=\"text/plain\"/>" +
+               "    </encoding>" +
                "  </distributed-cache>" +
                "</cache-container></infinispan>";
 }
