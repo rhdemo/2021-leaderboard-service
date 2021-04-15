@@ -135,12 +135,12 @@ public class StatsEndpoint {
       playersScores.sizeAsync().thenApply(s -> stats.put("games-played", Double.valueOf(Math.ceil(s / 2)).longValue()));
    }
 
-   private Query<Object> gameShotsCountQuery(boolean human, String gameId) {
+   private Query<Object[]> gameShotsCountQuery(boolean human, String gameId) {
       return queryFactoryShots.create(
             "SELECT s.userId FROM com.redhat.Shot s WHERE s.human=" + human + " AND s.gameId='" + gameId + "'");
    }
 
-   private Query<Object> gameStatusCountQuery(boolean human, GameStatus gameStatus, String gameId) {
+   private Query<Object[]> gameStatusCountQuery(boolean human, GameStatus gameStatus, String gameId) {
       return queryFactoryPlayerScores.create(
             "SELECT p.userId FROM com.redhat.PlayerScore p WHERE p.human=" + human + " AND p.gameStatus='"
                   + gameStatus.name() + "' AND p.gameId='" + gameId + "'");
@@ -151,23 +151,23 @@ public class StatsEndpoint {
             "SELECT sum(p.bonus) FROM com.redhat.PlayerScore p WHERE p.bonus > 0 AND p.human=" + human + " AND p.gameId='" + gameId + "'");
    }
 
-   private Query<Object> shotsTypesCountQuery(boolean human, ShotType shotType, String gameId) {
+   private Query<Object[]> shotsTypesCountQuery(boolean human, ShotType shotType, String gameId) {
       return queryFactoryShots.create(
             "SELECT s.userId FROM com.redhat.Shot s WHERE s.human=" + human + " AND s.shotType='" + shotType
                   .name() + "' AND s.gameId='" + gameId + "'");
    }
 
-   private Query<Object> shipTypeCountQuery(boolean human, ShipType shipType, String gameId) {
+   private Query<Object[]> shipTypeCountQuery(boolean human, ShipType shipType, String gameId) {
       return queryFactoryShots.create("SELECT s.userId FROM com.redhat.Shot s WHERE s.human=" + human
             + " AND s.shotType='SUNK' AND s.shipType='" + shipType.name() + "' AND s.gameId='" + gameId + "'");
    }
 
-   private Long calculateStat(Query<Object> statsQuery) {
-      return Long.valueOf(statsQuery.maxResults(Integer.MAX_VALUE).execute().list().size());
+   private Long calculateStat(Query<Object[]> statsQuery) {
+      return Long.valueOf(statsQuery.maxResults(1).execute().hitCount().getAsLong());
    }
 
-   private Long calculateBonus(Query<Object[]> statsQuery) {
-      return Long.valueOf(statsQuery.maxResults(Integer.MAX_VALUE).execute().list().get(0)[0].toString());
+   private Long calculateBonus(Query<Object[]> bonusQuery) {
+      return Long.valueOf(bonusQuery.maxResults(1).execute().list().get(0)[0].toString());
    }
 
    private boolean checkAvailabilityOfCaches() {
