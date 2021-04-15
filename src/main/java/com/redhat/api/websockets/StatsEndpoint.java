@@ -41,9 +41,13 @@ public class StatsEndpoint {
    QueryFactory queryFactoryPlayerScores;
    QueryFactory queryFactoryShots;
 
+   //, and
+
    @Inject
    public StatsEndpoint(RemoteCacheManager remoteCacheManager) {
       this.remoteCacheManager = remoteCacheManager;
+      stats.put("games-played", 0L);
+      stats.put("human-shots", 0L);
       stats.put("human-active", 0L);
       stats.put("human-win", 0L);
       stats.put("human-loss", 0L);
@@ -55,6 +59,8 @@ public class StatsEndpoint {
       stats.put("human-battleship-sunks", 0L);
       stats.put("human-destroyer-sunks", 0L);
       stats.put("human-bonus", 0L);
+
+      stats.put("ai-shots", 0L);
       stats.put("ai-active", 0L);
       stats.put("ai-win", 0L);
       stats.put("ai-loss", 0L);
@@ -66,15 +72,18 @@ public class StatsEndpoint {
       stats.put("ai-battleship-sunks", 0L);
       stats.put("ai-destroyer-sunks", 0L);
       stats.put("ai-bonus", 0L);
+      stats.put("total-hits", 0L);
+      stats.put("total-misses", 0L);
+      stats.put("total-sunk", 0L);
    }
 
    @OnOpen
    public void onOpen(Session session) {
       sessions.put(session.getId(), session);
-      LOGGER.info("Leaderboard service socket opened");
+      LOGGER.info("Stats service socket opened");
    }
 
-   @Scheduled(every = "1s")
+   @Scheduled(every = "{stats.schedule}")
    public void calculateStats() {
       if (sessions.isEmpty()) {
          return;
@@ -85,28 +94,50 @@ public class StatsEndpoint {
       String currentGame = game.get("current-game");
       String gameId = new JsonObject(currentGame).getString("uuid");
 
+      Long humanHits = calculateStat(shotsTypesCountQuery(true, ShotType.HIT, gameId));
+      Long humanMisses = calculateStat(shotsTypesCountQuery(true, ShotType.MISS, gameId));
+      Long humanSunks = calculateStat(shotsTypesCountQuery(true, ShotType.SUNK, gameId));
+
+      Long aiHits = calculateStat(shotsTypesCountQuery(false, ShotType.HIT, gameId));
+      Long aiMisses = calculateStat(shotsTypesCountQuery(false, ShotType.MISS, gameId));
+      Long aiSunks = calculateStat(shotsTypesCountQuery(false, ShotType.SUNK, gameId));
+
+      stats.put("human-shots", calculateStat(gameShotsCountQuery(true, gameId)));
       stats.put("human-active", calculateStat(gameStatusCountQuery(true, GameStatus.PLAYING, gameId)));
       stats.put("human-win", calculateStat(gameStatusCountQuery(true, GameStatus.WIN, gameId)));
       stats.put("human-loss", calculateStat(gameStatusCountQuery(true, GameStatus.LOSS, gameId)));
-      stats.put("human-hits", calculateStat(shotsTypesCountQuery(true, ShotType.HIT, gameId)));
-      stats.put("human-misses", calculateStat(shotsTypesCountQuery(true, ShotType.MISS, gameId)));
-      stats.put("human-sunks", calculateStat(shotsTypesCountQuery(true, ShotType.SUNK, gameId)));
+      stats.put("human-hits", humanHits);
+      stats.put("human-misses", humanMisses);
+      stats.put("human-sunks", humanSunks);
       stats.put("human-submarine-sunks", calculateStat(shipTypeCountQuery(true, ShipType.SUBMARINE, gameId)));
       stats.put("human-carrier-sunks", calculateStat(shipTypeCountQuery(true, ShipType.CARRIER, gameId)));
       stats.put("human-battleship-sunks", calculateStat(shipTypeCountQuery(true, ShipType.BATTLESHIP, gameId)));
       stats.put("human-destroyer-sunks", calculateStat(shipTypeCountQuery(true, ShipType.DESTROYER, gameId)));
       stats.put("human-bonus", calculateStat(bonusSumQuery(true, gameId)));
+
+      stats.put("ai-shots", calculateStat(gameShotsCountQuery(false, gameId)));
       stats.put("ai-active", calculateStat(gameStatusCountQuery(false, GameStatus.PLAYING, gameId)));
       stats.put("ai-win", calculateStat(gameStatusCountQuery(false, GameStatus.WIN, gameId)));
       stats.put("ai-loss", calculateStat(gameStatusCountQuery(false, GameStatus.LOSS, gameId)));
-      stats.put("ai-hits", calculateStat(shotsTypesCountQuery(false, ShotType.HIT, gameId)));
-      stats.put("ai-misses", calculateStat(shotsTypesCountQuery(false, ShotType.MISS, gameId)));
-      stats.put("ai-sunks", calculateStat(shotsTypesCountQuery(false, ShotType.SUNK, gameId)));
+      stats.put("ai-hits", aiHits);
+      stats.put("ai-misses", aiMisses);
+      stats.put("ai-sunks", aiSunks);
       stats.put("ai-submarine-sunks", calculateStat(shipTypeCountQuery(false, ShipType.SUBMARINE, gameId)));
       stats.put("ai-carrier-sunks", calculateStat(shipTypeCountQuery(false, ShipType.CARRIER, gameId)));
       stats.put("ai-battleship-sunks", calculateStat(shipTypeCountQuery(false, ShipType.BATTLESHIP, gameId)));
       stats.put("ai-destroyer-sunks", calculateStat(shipTypeCountQuery(false, ShipType.DESTROYER, gameId)));
       stats.put("ai-bonus", calculateStat(bonusSumQuery(false, gameId)));
+
+      stats.put("total-hits", humanHits + aiHits);
+      stats.put("total-misses", humanMisses + aiMisses);
+      stats.put("total-sunk", humanSunks + aiSunks);
+
+      playersScores.sizeAsync().thenApply(s -> stats.put("games-played", Double.valueOf(Math.floor(s / 2)).longValue()));
+   }
+
+   private Query<Object[]> gameShotsCountQuery(boolean human, String gameId) {
+      return queryFactoryShots.create(
+            "SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=" + human + " AND s.gameId='" + gameId + "'");
    }
 
    private Query<Object[]> gameStatusCountQuery(boolean human, GameStatus gameStatus, String gameId) {
@@ -182,12 +213,12 @@ public class StatsEndpoint {
    @OnClose
    public void onClose(Session session) {
       sessions.remove(session.getId());
-      LOGGER.info("Leaderboard Service session has been closed");
+      LOGGER.info("Stats Service session has been closed");
    }
 
    @OnError
    public void onError(Session session, Throwable throwable) {
       sessions.remove(session.getId());
-      LOGGER.error("Leaderboard Service session error", throwable);
+      LOGGER.error("Stats Service session error", throwable);
    }
 }

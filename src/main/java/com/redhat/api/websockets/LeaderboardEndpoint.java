@@ -3,6 +3,7 @@ package com.redhat.api.websockets;
 import com.redhat.model.PlayerScore;
 import io.quarkus.scheduler.Scheduled;
 import io.vertx.core.json.JsonObject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.Search;
@@ -56,7 +57,7 @@ public class LeaderboardEndpoint {
       LOGGER.error("Leaderboard Service session error", throwable);
    }
 
-   @Scheduled(every = "0.5s")
+   @Scheduled(every = "{leaderboard.schedule}")
    public void broadcast() {
       if(sessions.isEmpty()) {
          return;
