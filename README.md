@@ -6,6 +6,22 @@ Run Infinispan with Docker
 
 `docker run -v $(pwd):/user-config  -p 11222:11222 -e USER="admin" -e PASS="pass" infinispan/server:12.0.1.Final`
 
+## Scheduling properties for deployments
+
+Default values are 4s and 1s.
+
+```properties
+leaderboard.schedule=4s
+stats.schedule=1s
+```
+
+Change them in the deployment in containers using the following env variables:
+
+```bash
+LEADERBOARD_SCHEDULE='3s'
+STATS_SCHEDULE='0.5s''
+```
+
 ## Web Sockets
 
 ### Leaderboard
