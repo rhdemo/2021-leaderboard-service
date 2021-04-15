@@ -62,6 +62,11 @@ Payload
 
 ```json
 {
+  "games-played": 190,
+  "total-hits": 199,
+  "total-misses": 30,
+  "total-sunk": 120,
+  "human-shots": 300,
   "human-active": 21,
   "human-win": 0,
   "human-loss": 0,
@@ -73,6 +78,7 @@ Payload
   "human-destroyer-sunks": 2,
   "human-battleship-sunks": 1,
   "human-bonus": 0,
+  "ai-shots": 500,
   "ai-active": 21,
   "ai-win": 0,
   "ai-loss": 0,
