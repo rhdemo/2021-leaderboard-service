@@ -30,7 +30,7 @@ public class InfinispanInit {
    @Inject
    RemoteCacheManager cacheManager;
 
-   @ConfigProperty(name = "leaderboard.configure-infinispan")
+   @ConfigProperty(name = "leaderboard.configure-infinispan", defaultValue = "false")
    Boolean configureInfinispan;
    boolean init = false;
    List<Player> randomPlayers = new ArrayList<>();
