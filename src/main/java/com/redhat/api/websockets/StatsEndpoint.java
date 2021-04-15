@@ -113,7 +113,7 @@ public class StatsEndpoint {
       stats.put("human-carrier-sunks", calculateStat(shipTypeCountQuery(true, ShipType.CARRIER, gameId)));
       stats.put("human-battleship-sunks", calculateStat(shipTypeCountQuery(true, ShipType.BATTLESHIP, gameId)));
       stats.put("human-destroyer-sunks", calculateStat(shipTypeCountQuery(true, ShipType.DESTROYER, gameId)));
-      stats.put("human-bonus", calculateStat(bonusSumQuery(true, gameId)));
+      stats.put("human-bonus", calculateBonus(bonusSumQuery(true, gameId)));
 
       stats.put("ai-shots", calculateStat(gameShotsCountQuery(false, gameId)));
       stats.put("ai-active", calculateStat(gameStatusCountQuery(false, GameStatus.PLAYING, gameId)));
@@ -126,44 +126,48 @@ public class StatsEndpoint {
       stats.put("ai-carrier-sunks", calculateStat(shipTypeCountQuery(false, ShipType.CARRIER, gameId)));
       stats.put("ai-battleship-sunks", calculateStat(shipTypeCountQuery(false, ShipType.BATTLESHIP, gameId)));
       stats.put("ai-destroyer-sunks", calculateStat(shipTypeCountQuery(false, ShipType.DESTROYER, gameId)));
-      stats.put("ai-bonus", calculateStat(bonusSumQuery(false, gameId)));
+      stats.put("ai-bonus", calculateBonus(bonusSumQuery(false, gameId)));
 
       stats.put("total-hits", humanHits + aiHits);
       stats.put("total-misses", humanMisses + aiMisses);
       stats.put("total-sunk", humanSunks + aiSunks);
 
-      playersScores.sizeAsync().thenApply(s -> stats.put("games-played", Double.valueOf(Math.floor(s / 2)).longValue()));
+      playersScores.sizeAsync().thenApply(s -> stats.put("games-played", Double.valueOf(Math.ceil(s / 2)).longValue()));
    }
 
-   private Query<Object[]> gameShotsCountQuery(boolean human, String gameId) {
+   private Query<Object> gameShotsCountQuery(boolean human, String gameId) {
       return queryFactoryShots.create(
-            "SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=" + human + " AND s.gameId='" + gameId + "'");
+            "SELECT s.userId FROM com.redhat.Shot s WHERE s.human=" + human + " AND s.gameId='" + gameId + "'");
    }
 
-   private Query<Object[]> gameStatusCountQuery(boolean human, GameStatus gameStatus, String gameId) {
+   private Query<Object> gameStatusCountQuery(boolean human, GameStatus gameStatus, String gameId) {
       return queryFactoryPlayerScores.create(
-            "SELECT COUNT(p.userId) FROM com.redhat.PlayerScore p WHERE p.human=" + human + " AND p.gameStatus='"
+            "SELECT p.userId FROM com.redhat.PlayerScore p WHERE p.human=" + human + " AND p.gameStatus='"
                   + gameStatus.name() + "' AND p.gameId='" + gameId + "'");
    }
 
    private Query<Object[]> bonusSumQuery(boolean human, String gameId) {
       return queryFactoryPlayerScores.create(
-            "SELECT SUM(p.bonus) FROM com.redhat.PlayerScore p WHERE p.human=" + human + " AND p.gameId='" + gameId + "'");
+            "SELECT sum(p.bonus) FROM com.redhat.PlayerScore p WHERE p.bonus > 0 AND p.human=" + human + " AND p.gameId='" + gameId + "'");
    }
 
-   private Query<Object[]> shotsTypesCountQuery(boolean human, ShotType shotType, String gameId) {
+   private Query<Object> shotsTypesCountQuery(boolean human, ShotType shotType, String gameId) {
       return queryFactoryShots.create(
-            "SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=" + human + " AND s.shotType='" + shotType
+            "SELECT s.userId FROM com.redhat.Shot s WHERE s.human=" + human + " AND s.shotType='" + shotType
                   .name() + "' AND s.gameId='" + gameId + "'");
    }
 
-   private Query<Object[]> shipTypeCountQuery(boolean human, ShipType shipType, String gameId) {
-      return queryFactoryShots.create("SELECT COUNT(s.userId) FROM com.redhat.Shot s WHERE s.human=" + human
+   private Query<Object> shipTypeCountQuery(boolean human, ShipType shipType, String gameId) {
+      return queryFactoryShots.create("SELECT s.userId FROM com.redhat.Shot s WHERE s.human=" + human
             + " AND s.shotType='SUNK' AND s.shipType='" + shipType.name() + "' AND s.gameId='" + gameId + "'");
    }
 
-   private Long calculateStat(Query<Object[]> statsQuery) {
-      return Long.valueOf(statsQuery.execute().list().get(0)[0].toString());
+   private Long calculateStat(Query<Object> statsQuery) {
+      return Long.valueOf(statsQuery.maxResults(Integer.MAX_VALUE).execute().list().size());
+   }
+
+   private Long calculateBonus(Query<Object[]> statsQuery) {
+      return Long.valueOf(statsQuery.maxResults(Integer.MAX_VALUE).execute().list().get(0)[0].toString());
    }
 
    private boolean checkAvailabilityOfCaches() {

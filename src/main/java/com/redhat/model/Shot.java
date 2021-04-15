@@ -31,6 +31,7 @@ public class Shot {
    }
 
    @ProtoField(number = 1, required = true)
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
    public String getUserId() {
       return userId;
    }
@@ -49,7 +50,7 @@ public class Shot {
    }
 
    @ProtoField(number = 3)
-   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
    public String getGameId() {
       return gameId;
    }
@@ -59,7 +60,7 @@ public class Shot {
    }
 
    @ProtoField(number = 4)
-   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
    public Boolean isHuman() {
       return human;
    }
@@ -69,7 +70,7 @@ public class Shot {
    }
 
    @ProtoField(number = 5)
-   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
    public Long getTimestamp() {
       return timestamp;
    }
@@ -79,7 +80,7 @@ public class Shot {
    }
 
    @ProtoField(number = 6)
-   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
    public ShotType getShotType() {
       return shotType;
    }
@@ -89,7 +90,7 @@ public class Shot {
    }
 
    @ProtoField(number = 7)
-   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
    public ShipType getShipType() {
       return shipType;
    }

@@ -68,6 +68,7 @@ public class PlayerScore implements Comparable {
    }
 
    @ProtoField(number = 1)
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
    public String getUserId() {
       return userId;
    }
@@ -86,7 +87,7 @@ public class PlayerScore implements Comparable {
    }
 
    @ProtoField(number = 3)
-   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
    public String getGameId() {
       return gameId;
    }
@@ -105,7 +106,7 @@ public class PlayerScore implements Comparable {
    }
 
    @ProtoField(number = 5)
-   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
    public Boolean isHuman() {
       return human;
    }
@@ -115,7 +116,8 @@ public class PlayerScore implements Comparable {
    }
 
    @ProtoField(number = 6)
-   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
+   @ProtoDoc("@SortableField")
    public Integer getScore() {
       return score;
    }
@@ -125,7 +127,8 @@ public class PlayerScore implements Comparable {
    }
 
    @ProtoField(number = 7)
-   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
+   @ProtoDoc("@SortableField")
    public Long getTimestamp() {
       return timestamp;
    }
@@ -135,7 +138,7 @@ public class PlayerScore implements Comparable {
    }
 
    @ProtoField(number = 8)
-   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.NO)")
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
    public GameStatus getGameStatus() {
       return gameStatus;
    }
@@ -145,6 +148,7 @@ public class PlayerScore implements Comparable {
    }
 
    @ProtoField(number = 9)
+   @ProtoDoc("@Field(index=Index.YES, analyze = Analyze.NO, store = Store.YES)")
    public Integer getBonus() {
       return bonus;
    }
