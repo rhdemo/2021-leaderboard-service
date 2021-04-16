@@ -81,6 +81,11 @@ public class LeaderboardEndpoint {
       }
 
       String currentGame = game.get("current-game");
+
+      if (currentGame == null) {
+         return;
+      }
+
       String currentGameId = new JsonObject(currentGame).getString("uuid");
 
       if(gameId.isEmpty()) {

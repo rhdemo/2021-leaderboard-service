@@ -22,6 +22,7 @@ import javax.websocket.OnError;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -167,7 +168,17 @@ public class StatsEndpoint {
    }
 
    private Long calculateBonus(Query<Object[]> bonusQuery) {
-      return Long.valueOf(bonusQuery.maxResults(1).execute().list().get(0)[0].toString());
+      List<Object[]> result = bonusQuery.maxResults(1).execute().list();
+      if (result != null && result.size() == 0) {
+         return 0L;
+      }
+
+      Object b = result.get(0)[0];
+      if(b == null) {
+         return 0L;
+      }
+
+      return Long.valueOf(b.toString());
    }
 
    private boolean checkAvailabilityOfCaches() {
