@@ -43,7 +43,7 @@ public class GameUtils {
       }
 
       if(game == null && !remoteCacheManager.getCacheNames().contains(GAME_CACHE)) {
-         LOGGER.warn(String.format("%s cache does not exit", "game"));
+         LOGGER.warn(String.format("%s cache does not exit", GAME_CACHE));
          return true;
       }
 
@@ -60,6 +60,7 @@ public class GameUtils {
 
       String currentGame = this.game.get(CURRENT_GAME_KEY);
       if (currentGame == null) {
+         LOGGER.warn(String.format("%s cache does not contain %s", GAME_CACHE, CURRENT_GAME_KEY));
          return emptyGame;
       }
 
