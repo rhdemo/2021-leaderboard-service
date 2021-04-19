@@ -33,8 +33,10 @@ public class LeaderboardEndpoint {
    @Inject
    RemoteCacheManager remoteCacheManager;
 
+   @Inject
+   GameUtils gameUtils;
+
    RemoteCache<String, PlayerScore> playersScores;
-   RemoteCache<String, String> game;
    Query topTenQuery;
    String gameId = "";
 
@@ -42,6 +44,7 @@ public class LeaderboardEndpoint {
    public void onOpen(Session session) {
       sessions.put(session.getId(), session);
       LOGGER.info("Leaderboard service socket opened");
+      broadcast();
    }
 
    @OnClose
@@ -62,13 +65,12 @@ public class LeaderboardEndpoint {
          return;
       }
 
-      if(!remoteCacheManager.getCacheNames().contains(PlayerScore.PLAYERS_SCORES)) {
-         LOGGER.warn(String.format("%s cache does not exit", PlayerScore.PLAYERS_SCORES));
+      if(gameUtils.isGameNotReady()) {
          return;
       }
 
-      if(!remoteCacheManager.getCacheNames().contains("game")) {
-         LOGGER.warn(String.format("%s cache does not exit", "game"));
+      if(!remoteCacheManager.getCacheNames().contains(PlayerScore.PLAYERS_SCORES)) {
+         LOGGER.warn(String.format("%s cache does not exit", PlayerScore.PLAYERS_SCORES));
          return;
       }
 
@@ -76,17 +78,7 @@ public class LeaderboardEndpoint {
          playersScores = remoteCacheManager.getCache(PlayerScore.PLAYERS_SCORES);
       }
 
-      if(game == null) {
-         game = remoteCacheManager.getCache("game");
-      }
-
-      String currentGame = game.get("current-game");
-
-      if (currentGame == null) {
-         return;
-      }
-
-      String currentGameId = new JsonObject(currentGame).getString("uuid");
+      String currentGameId = gameUtils.getGameData().getId();
 
       if(gameId.isEmpty()) {
          gameId = currentGameId;
