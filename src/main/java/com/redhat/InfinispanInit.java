@@ -58,14 +58,16 @@ public class InfinispanInit {
          json.put("state", "active");
          game.put("current-game", json.toString());
 
-         for (String name: randomNames) {
-            String matchId = UUID.randomUUID().toString();
-            Player playerHuman = Player.create(name, matchId, true);
-            Player playerAI = Player.create("ai-" + name, matchId, false);
-            randomPlayers.add(playerHuman);
-            randomPlayers.add(playerAI);
-            playerScores.put(playerHuman.getPlayerScoreId(), playerHuman.toPlayerScore());
-            playerScores.put(playerAI.getPlayerScoreId(), playerAI.toPlayerScore());
+         for (int i = 0; i < 100; i ++) {
+            for (String name: randomNames) {
+               String matchId = UUID.randomUUID().toString();
+               Player playerHuman = Player.create(name + "-" + i, matchId, true);
+               Player playerAI = Player.create("ai-" + name + "-" + i, matchId, false);
+               randomPlayers.add(playerHuman);
+               randomPlayers.add(playerAI);
+               playerScores.put(playerHuman.getPlayerScoreId(), playerHuman.toPlayerScore());
+               playerScores.put(playerAI.getPlayerScoreId(), playerAI.toPlayerScore());
+            }
          }
 
          init = true;
@@ -99,14 +101,14 @@ public class InfinispanInit {
       }
    }
 
-   @Scheduled(every = "0.2s")
+   @Scheduled(every = "0.1s")
    public void createData() {
       if(configureInfinispan && init) {
          RemoteCache<String, PlayerScore> playerScores = cacheManager.getCache(PlayerScore.PLAYERS_SCORES);
          Player player = randomPlayers.get(random.nextInt(randomPlayers.size()));
          PlayerScore playerScore = playerScores.get(player.getPlayerScoreId());
          playerScore.setScore(playerScore.getScore() + random.nextInt(25));
-         playerScore.setBonus(playerScore.getBonus() + (random.nextBoolean() ? 1 : 0));
+         playerScore.setBonus(playerScore.getBonus() + (random.nextBoolean() ? 50 : 0));
          playerScores.put(player.getPlayerScoreId(), playerScore);
          RemoteCache<String, Shot> shots = cacheManager.getCache(Shot.PLAYERS_SHOTS);
 

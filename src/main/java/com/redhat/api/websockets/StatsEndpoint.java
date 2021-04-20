@@ -164,7 +164,7 @@ public class StatsEndpoint {
 
    private Query<Object[]> bonusSumQuery(boolean human, String gameId) {
       return queryFactoryPlayerScores.create(
-            "SELECT sum(p.bonus) FROM com.redhat.PlayerScore p WHERE p.bonus > 0 AND p.human=" + human + " AND p.gameId='" + gameId + "'");
+            "SELECT p.bonus FROM com.redhat.PlayerScore p WHERE p.bonus > 0 AND p.human=" + human + " AND p.gameId='" + gameId + "'");
    }
 
    private Query<Object[]> shotsTypesCountQuery(boolean human, ShotType shotType, String gameId) {
@@ -183,17 +183,12 @@ public class StatsEndpoint {
    }
 
    private Long calculateBonus(Query<Object[]> bonusQuery) {
-      List<Object[]> result = bonusQuery.maxResults(1).execute().list();
+      List<Object[]> result = bonusQuery.maxResults(Integer.MAX_VALUE).execute().list();
       if (result != null && result.size() == 0) {
          return 0L;
       }
 
-      Object b = result.get(0)[0];
-      if(b == null) {
-         return 0L;
-      }
-
-      return Long.valueOf(b.toString());
+      return result.stream().mapToLong((r) ->  (int) r[0]).sum();
    }
 
    private boolean cachesNotReady() {
