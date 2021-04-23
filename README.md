@@ -113,5 +113,5 @@ Access
 * Leaderboard: `http://localhost:8080`
   
 
-`docker commit f38ef624894c quay.io/redhatdemo/2021-leaderboard-service`
+`docker commit fded1c12ab5a quay.io/redhatdemo/2021-leaderboard-service`
 `docker push quay.io/redhatdemo/2021-leaderboard-service`

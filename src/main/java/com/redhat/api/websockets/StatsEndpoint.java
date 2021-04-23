@@ -112,6 +112,7 @@ public class StatsEndpoint {
       playersScores.sizeAsync().thenApply(s -> stats.put("games-played", Double.valueOf(Math.ceil(s / 2)).longValue()));
       stats.put("games-complete", humanWins + humanLoss);
       stats.put("game-state", gameData.getState());
+      stats.put("game-id", gameData.getId());
    }
 
 
@@ -119,6 +120,7 @@ public class StatsEndpoint {
    private void resetStats() {
       GameUtils.Game gameData = gameUtils.getGameData();
       stats.put("game-state", gameData.getState());
+      stats.put("game-id", gameData.getId());
       stats.put("games-played", 0L);
       stats.put("games-complete", 0L);
       stats.put("human-shots", 0L);
