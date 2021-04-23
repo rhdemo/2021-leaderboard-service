@@ -62,6 +62,8 @@ Payload
 
 ```json
 {
+  "games-id": "g1",
+  "games-status": "lobby",
   "games-played": 190,
   "total-hits": 199,
   "total-misses": 30,
@@ -113,5 +115,5 @@ Access
 * Leaderboard: `http://localhost:8080`
   
 
-`docker commit fded1c12ab5a quay.io/redhatdemo/2021-leaderboard-service`
+`docker commit 2afe01858f8b quay.io/redhatdemo/2021-leaderboard-service`
 `docker push quay.io/redhatdemo/2021-leaderboard-service`
